@@ -1,0 +1,15 @@
+export const cityName = "Тестова"
+export const cityCouncil = "міська рада"
+export const altCityName = "Логотип Тестової міської ради"
+
+export const territory_title = "Тестова міська рада"
+export const territory_title_instrumental = "Тестової міської територіальної громади"
+
+export const website_name = "Портал місцевих податків Тестової громади"
+export const website_url = "https://testova.skydatagroup.com/"
+export const website_url_p4v = "https://p4v.testova.skydatagroup.com/"
+export const telegram_name ="Місцеві податки Тестової ТГ"
+export const telegram_url ="https://t.me/Testova_taxes_bot"
+export const phone_number_GU_DPS = "(03229) 7-30-91"
+export const alt_qr_code = "Qr-code Тестова"
+export const GU_DPS_region = "Львівській області"

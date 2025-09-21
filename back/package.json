@@ -1,0 +1,57 @@
+{
+  "name": "backend",
+  "version": "1.0.1",
+  "description": "Backend server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --experimental-vm-modules",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' jest --watch --experimental-vm-modules",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage --experimental-vm-modules"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/tests"],
+    "testMatch": [
+      "**/__tests__/**/*.(js|ts)",
+      "**/*.(test|spec).(js|ts)"
+    ],
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "modules/**/*.js",
+      "!modules/**/index.js",
+      "!**/node_modules/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"]
+  },
+  "author": "Oleksiy Miuskyi, Oleksandr",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/cookie": "^9.3.1",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/multipart": "^8.3.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "bcrypt": "^5.1.1",
+    "docx": "^8.5.0",
+    "dotenv": "^16.4.5",
+    "fast-querystring": "^1.1.2",
+    "fastest-validator": "^1.17.0",
+    "fastify": "^4.26.2",
+    "ioredis": "^5.4.1",
+    "nodemon": "^3.1.0",
+    "pg": "^8.11.3",
+    "sharp": "^0.33.5",
+    "axios": "^1.7.7",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8"
+  }
+}

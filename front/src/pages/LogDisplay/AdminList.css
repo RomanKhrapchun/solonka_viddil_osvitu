@@ -1,0 +1,199 @@
+/* Додаткові кольорові класи для badge */
+.badge--success-bright {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
+}
+
+.badge--danger-dark {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(192, 57, 43, 0.3);
+}
+
+.badge--warning-dark {
+    background: linear-gradient(135deg, #d68910, #b7950b);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(214, 137, 16, 0.3);
+}
+
+.badge--info {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+}
+
+.badge--neutral {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(149, 165, 166, 0.3);
+}
+
+/* Покращене відображення badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Градієнти для існуючих класів */
+.badge--success {
+    background: linear-gradient(135deg, #27ae60, #229954);
+    box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
+}
+
+.badge--danger {
+    background: linear-gradient(135deg, #e74c3c, #cb4335);
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+.badge--warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    box-shadow: 0 2px 4px rgba(243, 156, 18, 0.3);
+}
+
+.badge--secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+/* Анімації для інтерактивності */
+.badge:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Спеціальні ефекти для особливих статусів */
+.badge--success-bright:hover {
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
+}
+
+.badge--danger-dark:hover {
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.4);
+}
+
+/* Пульсація для статусів очікування */
+.badge--info {
+    animation: pulse-info 2s infinite;
+}
+
+@keyframes pulse-info {
+    0% { box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3); }
+    50% { box-shadow: 0 2px 8px rgba(52, 152, 219, 0.5); }
+    100% { box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3); }
+}
+
+/* Стилі для діагностики в модальному вікні */
+.diagnostic-step {
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.diagnostic-step:hover {
+    border-color: #3498db;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+}
+
+.diagnostic-step--result {
+    background: linear-gradient(135deg, #e8f5e8, #d5f4d5);
+    border-color: #27ae60;
+    font-weight: bold;
+}
+
+.diagnostic-step--error {
+    background: linear-gradient(135deg, #fdf2f2, #fce4e4);
+    border-color: #e74c3c;
+}
+
+.diagnostic-step--warning {
+    background: linear-gradient(135deg, #fefbf2, #fcf3d3);
+    border-color: #f39c12;
+}
+
+/* Покращення для статистичного модалу */
+.stats-card {
+    padding: 20px;
+    background: linear-gradient(135deg, #fff, #f8f9fa);
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12, #e74c3c);
+    opacity: 0.8;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card h4 {
+    margin: 0 0 12px 0;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.stats-card p {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Анімації для завантаження */
+.loading-diagnostic {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+}
+
+.loading-diagnostic::before {
+    content: '⏳';
+    animation: spin 2s linear infinite;
+    margin-right: 8px;
+    font-size: 24px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

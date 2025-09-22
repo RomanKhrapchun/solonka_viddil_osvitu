@@ -413,6 +413,103 @@ class KindergartenController {
             })
         }
     }
+
+    // ===============================
+    // КОНТРОЛЕРИ ДЛЯ ВАРТОСТІ ХАРЧУВАННЯ (скопійовано з груп)
+    // ===============================
+
+    async findDailyFoodCostByFilter(request, reply) {
+        try {
+            const data = await kindergartenService.findDailyFoodCostByFilter(request)
+            reply.status(200).send(data)
+        } catch (error) {
+            Logger.error(error.message, { stack: error.stack })
+            reply.status(400).send({ 
+                error: 'Failed to fetch daily food cost',
+                message: error.message 
+            })
+        }
+    }
+
+    async createDailyFoodCost(request, reply) {
+        try {
+            const result = await kindergartenService.createDailyFoodCost(request)
+            reply.status(201).send({ 
+                message: 'Вартість харчування створено успішно',
+                data: result 
+            })
+        } catch (error) {
+            Logger.error(error.message, { stack: error.stack })
+            
+            // Перевіряємо на дублікат
+            if (error.message.includes('вже існує')) {
+                return reply.status(409).send({ 
+                    error: 'Conflict',
+                    message: error.message 
+                })
+            }
+
+            reply.status(400).send({ 
+                error: 'Failed to create daily food cost',
+                message: error.message 
+            })
+        }
+    }
+
+    async updateDailyFoodCost(request, reply) {
+        try {
+            const result = await kindergartenService.updateDailyFoodCost(request)
+            reply.status(200).send({ 
+                message: 'Вартість харчування оновлено успішно',
+                data: result 
+            })
+        } catch (error) {
+            Logger.error(error.message, { stack: error.stack })
+            
+            if (error.message.includes('не знайдено')) {
+                return reply.status(404).send({ 
+                    error: 'Not Found',
+                    message: error.message 
+                })
+            }
+
+            if (error.message.includes('вже існує')) {
+                return reply.status(409).send({ 
+                    error: 'Conflict',
+                    message: error.message 
+                })
+            }
+
+            reply.status(400).send({ 
+                error: 'Failed to update daily food cost',
+                message: error.message 
+            })
+        }
+    }
+
+    async deleteDailyFoodCost(request, reply) {
+        try {
+            const result = await kindergartenService.deleteDailyFoodCost(request)
+            reply.status(200).send({ 
+                message: 'Вартість харчування видалено успішно',
+                data: result 
+            })
+        } catch (error) {
+            Logger.error(error.message, { stack: error.stack })
+            
+            if (error.message.includes('не знайдено')) {
+                return reply.status(404).send({ 
+                    error: 'Not Found',
+                    message: error.message 
+                })
+            }
+
+            reply.status(400).send({ 
+                error: 'Failed to delete daily food cost',
+                message: error.message 
+            })
+        }
+    }
 }
 
 module.exports = new KindergartenController();

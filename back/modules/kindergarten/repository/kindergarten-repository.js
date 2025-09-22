@@ -625,6 +625,141 @@ class KindergartenRepository {
 
         return await sqlRequest(sql, values);
     }
+
+    // ===============================
+    // МЕТОДИ ДЛЯ ВАРТОСТІ ХАРЧУВАННЯ
+    // ===============================
+
+    async findDailyFoodCostByFilter(options) {
+        const {
+            limit,
+            offset,
+            sort_by = 'date',
+            sort_direction = 'desc',
+            date_from,
+            date_to
+        } = options;
+
+        const values = [];
+        let sql = `
+            select json_agg(rw) as data,
+                max(cnt) as count
+                from (
+                select json_build_object(
+                    'id', dfc.id,
+                    'date', dfc.date,
+                    'young_group_cost', dfc.young_group_cost,
+                    'older_group_cost', dfc.older_group_cost,
+                    'notes', dfc.notes,
+                    'created_at', dfc.created_at
+                ) as rw,
+                count(*) over () as cnt
+            from ower.daily_food_cost dfc
+            where 1=1
+        `;
+
+        // Додаємо фільтри
+        if (date_from) {
+            sql += ` AND dfc.date >= ?`;
+            values.push(date_from);
+        }
+
+        if (date_to) {
+            sql += ` AND dfc.date <= ?`;
+            values.push(date_to);
+        }
+
+        // Додаємо сортування
+        const allowedSortFields = ['id', 'date', 'young_group_cost', 'older_group_cost', 'created_at'];
+        const validSortBy = allowedSortFields.includes(sort_by) ? sort_by : 'date';
+        const validSortDirection = ['asc', 'desc'].includes(sort_direction.toLowerCase()) ? sort_direction.toUpperCase() : 'DESC';
+        
+        sql += ` ORDER BY dfc.${validSortBy} ${validSortDirection}`;
+        
+        // Додаємо пагінацію
+        sql += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset);
+        
+        sql += `) q`;
+
+        return await sqlRequest(sql, values);
+    }
+
+    async getDailyFoodCostByDateAndExcludeId(date, excludeId = null) {
+        let sql = `
+            SELECT id, date, young_group_cost, older_group_cost 
+            FROM ower.daily_food_cost 
+            WHERE date = ?
+        `;
+        const values = [date];
+
+        if (excludeId) {
+            sql += ` AND id != ?`;
+            values.push(excludeId);
+        }
+
+        return await sqlRequest(sql, values);
+    }
+
+    async createDailyFoodCost(data) {
+        const {
+            date,
+            young_group_cost,
+            older_group_cost,
+            notes,
+            created_at
+        } = data;
+
+        const sql = `
+            INSERT INTO ower.daily_food_cost 
+            (date, young_group_cost, older_group_cost, notes, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            RETURNING id, date, young_group_cost, older_group_cost, notes, created_at
+        `;
+
+        const values = [
+            date,
+            young_group_cost,
+            older_group_cost,
+            notes,
+            created_at
+        ];
+
+        return await sqlRequest(sql, values);
+    }
+
+    async getDailyFoodCostById(id) {
+        const sql = `
+            SELECT id, date, young_group_cost, older_group_cost, notes, created_at 
+            FROM ower.daily_food_cost 
+            WHERE id = ?
+        `;
+        return await sqlRequest(sql, [id]);
+    }
+
+    async updateDailyFoodCost(id, data) {
+        const fields = Object.keys(data).map(field => `${field} = ?`).join(', ');
+        const values = [...Object.values(data), id];
+        
+        const sql = `
+            UPDATE ower.daily_food_cost 
+            SET ${fields}
+            WHERE id = ?
+            RETURNING id, date, young_group_cost, older_group_cost, notes, created_at
+        `;
+        
+        return await sqlRequest(sql, values);
+    }
+
+    async deleteDailyFoodCost(id) {
+        const sql = `
+            DELETE FROM ower.daily_food_cost 
+            WHERE id = ?
+            RETURNING id
+        `;
+        
+        return await sqlRequest(sql, [id]);
+    }
 }
 
 module.exports = new KindergartenRepository();

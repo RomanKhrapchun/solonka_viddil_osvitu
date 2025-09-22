@@ -18,6 +18,7 @@ const displayBillsFilterFields = ['id', 'account_number', 'payer', 'service_id',
 const displayDebtChargesFields = ['id', 'tax_number', 'payer_name', 'payment_info','tax_classifier', 'account_number', 'full_document_id', 'document_date', 'delivery_date', 'cadastral_number', 'amount', 'status'];
 const displayOwnerLogFields = ['id', 'date', 'name', 'chat_id', 'ip', 'source_display', 'formatted_date', 'search_year', 'search_month_name'];
 const displayFieldsPhone = ['clientid', 'phone', 'hasNumber', 'isChecked'];
+const displayDailyFoodCostFields = ['id', 'date', 'young_group_cost', 'older_group_cost', 'notes', 'created_at'];
 
 const allowedUserTableFilterFields = ['is_active', 'access_group']
 const allowedLogTableFilterFields = ['action', 'uid', 'action_stamp_tx', 'access_group_id']
@@ -39,6 +40,7 @@ const allowedDebtChargesSortFields = ['id', 'tax_number', 'payer_name', 'documen
 const allowedOwnerLogFields = ['name', 'dateFrom', 'dateTo', 'source', 'chat_id', 'ip'];
 const allowedMessagesLogFilterFields = ['action_stamp_tx', 'access_group_id', 'username', 'uid'];
 const allowedMessagesLogFields = ['dateFrom', 'dateTo', 'year', 'month', 'groupNumber', 'username', 'uid', 'action', 'periodType'];
+const allowedDailyFoodCostFilterFields = ['date_from', 'date_to'];
 const sortFieldsMapping = {
     'id': 'id',
     'name': 'name',
@@ -161,4 +163,6 @@ module.exports = {
     displayFieldsPhone,
     displayKindergartenGroupsFields,
     allowedKindergartenGroupsFilterFields,
+    displayDailyFoodCostFields,
+    allowedDailyFoodCostFilterFields,
 }

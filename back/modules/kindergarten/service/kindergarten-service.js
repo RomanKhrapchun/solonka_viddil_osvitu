@@ -582,6 +582,167 @@ class KindergartenService {
 
         return result;
     }
+
+    // ===============================
+    // МЕТОДИ ДЛЯ ВАРТОСТІ ХАРЧУВАННЯ
+    // ===============================
+
+    async findDailyFoodCostByFilter(request) {
+        const { 
+            page = 1, 
+            limit = 16, 
+            sort_by = 'date', 
+            sort_direction = 'desc',
+            date_from,
+            date_to,
+            ...whereConditions 
+        } = request.body;
+
+        const { offset } = paginate(page, limit);
+        
+        // Логування пошуку якщо є параметри фільтрації
+        if (date_from || date_to) {
+            await logRepository.createLog({
+                row_pk_id: null,
+                uid: request?.user?.id,
+                action: 'SEARCH',
+                client_addr: request?.ip,
+                application_name: 'Пошук вартості харчування',
+                action_stamp_tx: new Date(),
+                action_stamp_stm: new Date(),
+                action_stamp_clk: new Date(),
+                schema_name: 'ower',
+                table_name: 'daily_food_cost',
+                oid: '16508',
+            });
+        }
+
+        const userData = await KindergartenRepository.findDailyFoodCostByFilter({
+            limit,
+            offset,
+            sort_by,
+            sort_direction,
+            date_from,
+            date_to,
+            ...whereConditions
+        });
+
+        return paginationData(userData[0], page, limit);
+    }
+
+    async createDailyFoodCost(request) {
+        const {
+            date,
+            young_group_cost,
+            older_group_cost,
+            notes
+        } = request.body;
+
+        // Перевіряємо чи не існує запис з такою датою
+        const existingRecord = await KindergartenRepository.getDailyFoodCostByDateAndExcludeId(date);
+
+        if (existingRecord && existingRecord.length > 0) {
+            throw new Error('Вартість харчування на цю дату вже існує');
+        }
+
+        const recordData = {
+            date,
+            young_group_cost,
+            older_group_cost,
+            notes,
+            created_at: new Date()
+        };
+
+        const result = await KindergartenRepository.createDailyFoodCost(recordData);
+
+        // Логування створення
+        await logRepository.createLog({
+            row_pk_id: result.insertId || result.id,
+            uid: request?.user?.id,
+            action: 'INSERT',
+            client_addr: request?.ip,
+            application_name: 'Створення вартості харчування',
+            action_stamp_tx: new Date(),
+            action_stamp_stm: new Date(),
+            action_stamp_clk: new Date(),
+            schema_name: 'ower',
+            table_name: 'daily_food_cost',
+            oid: '16508',
+        });
+
+        return result;
+    }
+
+    async updateDailyFoodCost(request) {
+        const { id } = request.params;
+        const updateData = request.body;
+
+        // Перевіряємо чи існує запис
+        const existingRecord = await KindergartenRepository.getDailyFoodCostById(id);
+        if (!existingRecord || existingRecord.length === 0) {
+            throw new Error('Запис не знайдено');
+        }
+
+        // Якщо змінюється дата, перевіряємо на дублікати
+        if (updateData.date) {
+            const duplicateRecord = await KindergartenRepository.getDailyFoodCostByDateAndExcludeId(
+                updateData.date, 
+                id // виключаємо поточний запис
+            );
+
+            if (duplicateRecord && duplicateRecord.length > 0) {
+                throw new Error('Вартість харчування на цю дату вже існує');
+            }
+        }
+
+        const result = await KindergartenRepository.updateDailyFoodCost(id, updateData);
+
+        // Логування оновлення
+        await logRepository.createLog({
+            row_pk_id: id,
+            uid: request?.user?.id,
+            action: 'UPDATE',
+            client_addr: request?.ip,
+            application_name: 'Оновлення вартості харчування',
+            action_stamp_tx: new Date(),
+            action_stamp_stm: new Date(),
+            action_stamp_clk: new Date(),
+            schema_name: 'ower',
+            table_name: 'daily_food_cost',
+            oid: '16508',
+        });
+
+        return result;
+    }
+
+    async deleteDailyFoodCost(request) {
+        const { id } = request.params;
+
+        // Перевіряємо чи існує запис
+        const existingRecord = await KindergartenRepository.getDailyFoodCostById(id);
+        if (!existingRecord || existingRecord.length === 0) {
+            throw new Error('Запис не знайдено');
+        }
+
+        const result = await KindergartenRepository.deleteDailyFoodCost(id);
+
+        // Логування видалення
+        await logRepository.createLog({
+            row_pk_id: id,
+            uid: request?.user?.id,
+            action: 'DELETE',
+            client_addr: request?.ip,
+            application_name: 'Видалення вартості харчування',
+            action_stamp_tx: new Date(),
+            action_stamp_stm: new Date(),
+            action_stamp_clk: new Date(),
+            schema_name: 'ower',
+            table_name: 'daily_food_cost',
+            oid: '16508',
+        });
+
+        return result;
+    }
 }
 
 module.exports = new KindergartenService();

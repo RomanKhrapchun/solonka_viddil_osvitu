@@ -18,7 +18,11 @@ const {
     attendanceCreateSchema,
     attendanceUpdateSchema,
     attendanceDeleteSchema,
-    attendanceInfoSchema
+    attendanceInfoSchema,
+    dailyFoodCostFilterSchema,
+    dailyFoodCostCreateSchema,
+    dailyFoodCostUpdateSchema,
+    dailyFoodCostDeleteSchema
 } = require('../schema/kindergarten-schema');
 
 const routes = async (fastify) => {
@@ -104,6 +108,23 @@ const routes = async (fastify) => {
     fastify.delete("/attendance/:id", { 
         schema: attendanceDeleteSchema 
     }, kindergartenController.deleteAttendance);
+
+    // Роути для вартості харчування садочку
+    fastify.post("/daily_food_cost/filter", { 
+        schema: dailyFoodCostFilterSchema 
+    }, kindergartenController.findDailyFoodCostByFilter);
+
+    fastify.post("/daily_food_cost", { 
+        schema: dailyFoodCostCreateSchema 
+    }, kindergartenController.createDailyFoodCost);
+
+    fastify.put("/daily_food_cost/:id", { 
+        schema: dailyFoodCostUpdateSchema 
+    }, kindergartenController.updateDailyFoodCost);
+
+    fastify.delete("/daily_food_cost/:id", { 
+        schema: dailyFoodCostDeleteSchema 
+    }, kindergartenController.deleteDailyFoodCost);
 }
 
 module.exports = routes;

@@ -364,6 +364,103 @@ const attendanceDeleteSchema = {
     }
 }
 
+const dailyFoodCostFilterSchema = {
+    body: {
+        page: {
+            type: 'number',
+            optional: true,
+        },
+        limit: {
+            type: 'number', 
+            optional: true,
+        },
+        sort_by: {
+            type: 'string',
+            optional: true,
+        },
+        sort_direction: {
+            type: 'string',
+            optional: true,
+        },
+        date_from: {
+            type: 'string',
+            optional: true,
+            format: 'date',
+        },
+        date_to: {
+            type: 'string',
+            optional: true,
+            format: 'date',
+        },
+    }
+}
+
+const dailyFoodCostCreateSchema = {
+    body: {
+        date: {
+            type: 'string',
+            format: 'date',
+        },
+        young_group_cost: {
+            type: 'number',
+            minimum: 0,
+            maximum: 9999.99,
+        },
+        older_group_cost: {
+            type: 'number',
+            minimum: 0,
+            maximum: 9999.99,
+        },
+        notes: {
+            type: 'string',
+            optional: true,
+            max: 1000,
+        },
+    }
+}
+
+const dailyFoodCostUpdateSchema = {
+    params: {
+        id: {
+            type: 'string',
+            numeric: true,
+        }
+    },
+    body: {
+        date: {
+            type: 'string',
+            format: 'date',
+            optional: true,
+        },
+        young_group_cost: {
+            type: 'number',
+            minimum: 0,
+            maximum: 9999.99,
+            optional: true,
+        },
+        older_group_cost: {
+            type: 'number',
+            minimum: 0,
+            maximum: 9999.99,
+            optional: true,
+        },
+        notes: {
+            type: 'string',
+            optional: true,
+            max: 1000,
+        },
+    }
+}
+
+const dailyFoodCostDeleteSchema = {
+    params: {
+        id: {
+            type: 'string',
+            numeric: true,
+        }
+    }
+}
+
 module.exports = {
     // Основні схеми садочка
     kindergartenFilterSchema,
@@ -388,4 +485,10 @@ module.exports = {
     attendanceCreateSchema,
     attendanceUpdateSchema,
     attendanceDeleteSchema,
+
+    // Схеми для вартості харчування
+    dailyFoodCostFilterSchema,
+    dailyFoodCostCreateSchema,
+    dailyFoodCostUpdateSchema,
+    dailyFoodCostDeleteSchema,
 }

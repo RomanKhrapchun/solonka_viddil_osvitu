@@ -1,0 +1,328 @@
+/* ========================================
+   DailyFoodCost - Стилі для покращених форм
+   ======================================== */
+
+/* Основний контейнер модального вікна */
+.daily-food-cost-modal {
+    padding: 0;
+    max-width: 100%;
+}
+
+/* Секції форми */
+.form-section {
+    margin-bottom: 24px;
+    padding: 0;
+}
+
+.form-section:last-child {
+    margin-bottom: 16px;
+}
+
+/* Виділена секція (для дати) */
+.form-section--highlighted {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.form-section--highlighted::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 12px;
+    z-index: -1;
+    opacity: 0.1;
+}
+
+/* Лейбли форм */
+.form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 15px;
+    color: #495057;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+}
+
+.form-section--highlighted .form-label {
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Зірочка обов'язкових полів */
+.required-mark {
+    color: #dc3545;
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+/* Підказки під полями */
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 8px;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.form-section--highlighted .form-help {
+    color: #495057;
+    font-weight: 500;
+    font-style: normal;
+}
+
+/* Контейнер для полів з валютою */
+.currency-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Суфікс валюти */
+.currency-suffix {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    font-weight: 600;
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 2;
+    background: white;
+    padding: 0 4px;
+}
+
+/* Стилі для Input полів */
+.daily-food-cost-modal .currency-input input,
+.daily-food-cost-modal .date-input-enhanced input {
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    min-height: 52px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    font-family: system-ui, -apple-system, sans-serif !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Input з валютою має додатковий padding справа */
+.currency-input input {
+    padding-right: 60px !important;
+    text-align: right !important;
+}
+
+/* Фокус на полях */
+.daily-food-cost-modal input:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    outline: none !important;
+}
+
+/* Поле дати - покращене */
+.date-input-enhanced input {
+    font-weight: 500 !important;
+    color: #495057 !important;
+}
+
+/* Стилі для різних браузерів при роботі з датою */
+.date-input-enhanced input::-webkit-calendar-picker-indicator {
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.date-input-enhanced input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* Firefox стилі для дати */
+.date-input-enhanced input[type="date"] {
+    color-scheme: light;
+}
+
+/* Hover ефекти */
+.daily-food-cost-modal input:hover {
+    border-color: #007bff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Інформаційне повідомлення */
+.form-info-notice {
+    background: linear-gradient(135deg, #e7f3ff 0%, #cce7ff 100%);
+    border: 1px solid #b8daff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: #004085;
+    margin-top: 24px;
+    line-height: 1.5;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.form-info-notice strong {
+    font-weight: 600;
+}
+
+/* Анімації */
+.form-section {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-section--highlighted {
+    animation: slideInUp 0.4s ease-out;
+}
+
+/* Responsive дизайн */
+@media (max-width: 768px) {
+    .daily-food-cost-modal {
+        padding: 0 8px;
+    }
+    
+    .form-section--highlighted {
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .form-label {
+        font-size: 14px;
+    }
+    
+    .form-section--highlighted .form-label {
+        font-size: 15px;
+    }
+    
+    .form-help {
+        font-size: 11px;
+    }
+    
+    .daily-food-cost-modal .currency-input input,
+    .daily-food-cost-modal .date-input-enhanced input {
+        font-size: 15px !important;
+        padding: 12px 14px !important;
+        min-height: 48px !important;
+    }
+    
+    .currency-input input {
+        padding-right: 55px !important;
+    }
+    
+    .currency-suffix {
+        font-size: 15px;
+        right: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-section {
+        margin-bottom: 20px;
+    }
+    
+    .form-section--highlighted {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .daily-food-cost-modal .currency-input input,
+    .daily-food-cost-modal .date-input-enhanced input {
+        font-size: 14px !important;
+        padding: 10px 12px !important;
+        min-height: 44px !important;
+    }
+    
+    .currency-input input {
+        padding-right: 50px !important;
+    }
+    
+    .currency-suffix {
+        font-size: 14px;
+        right: 12px;
+    }
+    
+    .form-info-notice {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+}
+
+/* Темна тема (опціонально) */
+@media (prefers-color-scheme: dark) {
+    .form-section--highlighted {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        border-color: #495057;
+    }
+    
+    .form-section--highlighted .form-label {
+        color: #e9ecef;
+    }
+    
+    .form-section--highlighted .form-help {
+        color: #adb5bd;
+    }
+    
+    .form-info-notice {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2c4866 100%);
+        border-color: #3d5a80;
+        color: #cce7ff;
+    }
+}
+
+/* Стилі для валідації помилок */
+.daily-food-cost-modal input:invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.daily-food-cost-modal input:valid {
+    border-color: #28a745 !important;
+}
+
+/* Додаткові покращення для UX */
+.form-section {
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    transform: translateY(-2px);
+}
+
+.form-section--highlighted:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Стилі для placeholder'ів */
+.daily-food-cost-modal input::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.daily-food-cost-modal input:focus::placeholder {
+    opacity: 0.5;
+}

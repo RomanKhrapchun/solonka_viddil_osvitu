@@ -16,6 +16,7 @@ import {Transition} from "react-transition-group";
 import Input from "../../components/common/Input/Input";
 import FilterDropdown from "../../components/common/Dropdown/FilterDropdown";
 import "../../components/common/Dropdown/FilterDropdown.css";
+import './DailyFoodCost.css'; // ДОДАНО ІМПОРТ CSS
 
 // Іконки
 const addIcon = generateIcon(iconMap.add, null, 'currentColor', 20, 20)
@@ -96,7 +97,6 @@ const DailyFoodCost = () => {
             };
         }
 
-        // Дефолтний стан за замовчуванням
         return {
             isFilterOpen: false,
             selectData: {},
@@ -384,17 +384,36 @@ const DailyFoodCost = () => {
         }));
     };
 
-    // Обробники для модальних вікон
-    const handleAdd = () => {
-        setModalState({
+    // Функції для модального вікна додавання (ОНОВЛЕНО)
+    const openModal = () => {
+        setModalState(prev => ({
+            ...prev,
             isOpen: true,
-            loading: false,
             formData: {
                 date: '',
                 young_group_cost: '',
                 older_group_cost: ''
             }
-        });
+        }));
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+        setModalState(prev => ({ ...prev, isOpen: false }));
+        document.body.style.overflow = 'auto';
+    };
+
+    // ДОДАНО: handleModalInputChange функція
+    const handleModalInputChange = (field, value) => {
+        setModalState(prev => ({
+            ...prev,
+            formData: {
+                ...prev.formData,
+                [field]: value && typeof value === 'object' && value.value 
+                    ? value.value 
+                    : value
+            }
+        }));
     };
 
     const handleEdit = (record) => {
@@ -408,6 +427,7 @@ const DailyFoodCost = () => {
                 older_group_cost: record.older_group_cost || ''
             }
         });
+        document.body.style.overflow = 'hidden';
     };
 
     const handleDelete = (record) => {
@@ -417,6 +437,7 @@ const DailyFoodCost = () => {
             itemId: record.id,
             itemDate: new Date(record.date).toLocaleDateString('uk-UA')
         });
+        document.body.style.overflow = 'hidden';
     };
 
     // Функції для збереження
@@ -440,15 +461,7 @@ const DailyFoodCost = () => {
                 message: 'Вартість харчування успішно додана',
             });
 
-            setModalState({ 
-                isOpen: false, 
-                loading: false, 
-                formData: { 
-                    date: '', 
-                    young_group_cost: '', 
-                    older_group_cost: ''
-                } 
-            });
+            closeModal();
             
             retryFetch('api/kindergarten/daily_food_cost/filter', {
                 method: 'post',
@@ -587,7 +600,7 @@ const DailyFoodCost = () => {
                             </h2>
                             <div className="table-header__buttons">
                                 <Button
-                                    onClick={handleAdd}
+                                    onClick={openModal}
                                     icon={addIcon}>
                                     Додати вартість
                                 </Button>
@@ -605,7 +618,6 @@ const DailyFoodCost = () => {
                                     Фільтри {hasActiveFilters && `(${Object.keys(stateDFC.selectData).filter(key => stateDFC.selectData[key]).length})`}
                                 </Button>
 
-                                {/* Dropdown фільтр */}
                                 <FilterDropdown
                                     isOpen={stateDFC.isFilterOpen}
                                     onClose={closeFilterDropdown}
@@ -635,68 +647,83 @@ const DailyFoodCost = () => {
                 </React.Fragment> : null
             }
 
-            {/* Модальне вікно додавання */}
+            {/* Модальне вікно додавання - ПОКРАЩЕНО */}
             <Transition in={modalState.isOpen} timeout={200} unmountOnExit nodeRef={modalNodeRef}>
                 {state => (
                     <Modal
                         ref={modalNodeRef}
-                        className={`modal-window-wrapper ${state === 'entered' ? 'modal-window-wrapper--open' : ''}`}
-                        onClose={() => setModalState({ ...modalState, isOpen: false })}
+                        className={`modal-window-wrapper ${state === 'entered' ? 'modal-window-wrapper--active' : ''}`}
+                        onClose={closeModal}
+                        onOk={handleSave}
+                        confirmLoading={modalState.loading}
+                        cancelText="Відхилити"
+                        okText="Зберегти"
                         title="Додати вартість харчування"
-                        footer={
-                            <div className="modal-footer">
-                                <Button
-                                    className="outline"
-                                    onClick={() => setModalState({ ...modalState, isOpen: false })}
-                                    disabled={modalState.loading}
-                                >
-                                    Скасувати
-                                </Button>
-                                <Button
-                                    onClick={handleSave}
-                                    loading={modalState.loading}
-                                    disabled={!modalState.formData.date || !modalState.formData.young_group_cost || !modalState.formData.older_group_cost}
-                                >
-                                    Зберегти
-                                </Button>
-                            </div>
-                        }
                     >
-                        <div className="form-group">
-                            <Input
-                                label="Дата *"
-                                type="date"
-                                value={modalState.formData.date}
-                                onChange={(_, value) => setModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, date: value }
-                                }))}
-                                required
-                            />
-                            <Input
-                                label="Вартість молодшої групи (грн) *"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={modalState.formData.young_group_cost}
-                                onChange={(_, value) => setModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, young_group_cost: value }
-                                }))}
-                                required
-                            />
-                            <Input
-                                label="Вартість старшої групи (грн) *"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={modalState.formData.older_group_cost}
-                                onChange={(_, value) => setModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, older_group_cost: value }
-                                }))}
-                                required
-                            />
+                        <div className="daily-food-cost-modal">
+                            <div className="form-section form-section--highlighted">
+                                <label className="form-label">
+                                    📅 Дата харчування <span className="required-mark">*</span>
+                                </label>
+                                <Input
+                                    type="date"
+                                    name="date"
+                                    value={modalState.formData.date}
+                                    onChange={handleModalInputChange}
+                                    placeholder="Оберіть дату"
+                                    required
+                                    className="date-input-enhanced"
+                                />
+                                <small className="form-help">Оберіть дату для якої вказується вартість харчування</small>
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    👶 Вартість для молодшої групи <span className="required-mark">*</span>
+                                </label>
+                                <div className="currency-input-container">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="999999"
+                                        name="young_group_cost"
+                                        value={modalState.formData.young_group_cost}
+                                        onChange={handleModalInputChange}
+                                        placeholder="0.00"
+                                        required
+                                        className="currency-input"
+                                    />
+                                    <span className="currency-suffix">грн</span>
+                                </div>
+                                <small className="form-help">Вартість харчування на одну дитину молодшої групи за день</small>
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    🧒 Вартість для старшої групи <span className="required-mark">*</span>
+                                </label>
+                                <div className="currency-input-container">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="999999"
+                                        name="older_group_cost"
+                                        value={modalState.formData.older_group_cost}
+                                        onChange={handleModalInputChange}
+                                        placeholder="0.00"
+                                        required
+                                        className="currency-input"
+                                    />
+                                    <span className="currency-suffix">грн</span>
+                                </div>
+                                <small className="form-help">Вартість харчування на одну дитину старшої групи за день</small>
+                            </div>
+
+                            <div className="form-info-notice">
+                                💡 <strong>Підказка:</strong> Вартість харчування вказується в гривнях за один день на одну дитину
+                            </div>
                         </div>
                     </Modal>
                 )}
@@ -707,63 +734,77 @@ const DailyFoodCost = () => {
                 {state => (
                     <Modal
                         ref={editModalNodeRef}
-                        className={`modal-window-wrapper ${state === 'entered' ? 'modal-window-wrapper--open' : ''}`}
+                        className={`modal-window-wrapper ${state === 'entered' ? 'modal-window-wrapper--active' : ''}`}
                         onClose={() => setEditModalState({ ...editModalState, isOpen: false })}
+                        onOk={handleUpdate}
+                        confirmLoading={editModalState.loading}
+                        cancelText="Відхилити"
+                        okText="Оновити"
                         title="Редагувати вартість харчування"
-                        footer={
-                            <div className="modal-footer">
-                                <Button
-                                    className="outline"
-                                    onClick={() => setEditModalState({ ...editModalState, isOpen: false })}
-                                    disabled={editModalState.loading}
-                                >
-                                    Скасувати
-                                </Button>
-                                <Button
-                                    onClick={handleUpdate}
-                                    loading={editModalState.loading}
-                                    disabled={!editModalState.formData.date || !editModalState.formData.young_group_cost || !editModalState.formData.older_group_cost}
-                                >
-                                    Оновити
-                                </Button>
-                            </div>
-                        }
                     >
-                        <div className="form-group">
-                            <Input
-                                label="Дата *"
-                                type="date"
-                                value={editModalState.formData.date}
-                                onChange={(_, value) => setEditModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, date: value }
-                                }))}
-                                required
-                            />
-                            <Input
-                                label="Вартість молодшої групи (грн) *"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={editModalState.formData.young_group_cost}
-                                onChange={(_, value) => setEditModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, young_group_cost: value }
-                                }))}
-                                required
-                            />
-                            <Input
-                                label="Вартість старшої групи (грн) *"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={editModalState.formData.older_group_cost}
-                                onChange={(_, value) => setEditModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, older_group_cost: value }
-                                }))}
-                                required
-                            />
+                        <div className="daily-food-cost-modal">
+                            <div className="form-section">
+                                <label className="form-label">
+                                    📅 Дата харчування <span className="required-mark">*</span>
+                                </label>
+                                <Input
+                                    type="date"
+                                    name="date"
+                                    value={editModalState.formData.date}
+                                    onChange={(field, value) => setEditModalState(prev => ({
+                                        ...prev,
+                                        formData: { ...prev.formData, [field]: value }
+                                    }))}
+                                    required
+                                    className="date-input-enhanced"
+                                />
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    👶 Вартість для молодшої групи <span className="required-mark">*</span>
+                                </label>
+                                <div className="currency-input-container">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="999999"
+                                        name="young_group_cost"
+                                        value={editModalState.formData.young_group_cost}
+                                        onChange={(field, value) => setEditModalState(prev => ({
+                                            ...prev,
+                                            formData: { ...prev.formData, [field]: value }
+                                        }))}
+                                        required
+                                        className="currency-input"
+                                    />
+                                    <span className="currency-suffix">грн</span>
+                                </div>
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    🧒 Вартість для старшої групи <span className="required-mark">*</span>
+                                </label>
+                                <div className="currency-input-container">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="999999"
+                                        name="older_group_cost"
+                                        value={editModalState.formData.older_group_cost}
+                                        onChange={(field, value) => setEditModalState(prev => ({
+                                            ...prev,
+                                            formData: { ...prev.formData, [field]: value }
+                                        }))}
+                                        required
+                                        className="currency-input"
+                                    />
+                                    <span className="currency-suffix">грн</span>
+                                </div>
+                            </div>
                         </div>
                     </Modal>
                 )}
@@ -774,27 +815,13 @@ const DailyFoodCost = () => {
                 {state => (
                     <Modal
                         ref={deleteModalNodeRef}
-                        className={`modal-window-wrapper ${state === 'entered' ? 'modal-window-wrapper--open' : ''}`}
+                        className={`modal-window-wrapper ${state === 'entered' ? 'modal-window-wrapper--active' : ''}`}
                         onClose={() => setDeleteModalState({ ...deleteModalState, isOpen: false })}
+                        onOk={handleConfirmDelete}
+                        confirmLoading={deleteModalState.loading}
+                        cancelText="Скасувати"
+                        okText="Видалити"
                         title="Підтвердження видалення"
-                        footer={
-                            <div className="modal-footer">
-                                <Button
-                                    className="outline"
-                                    onClick={() => setDeleteModalState({ ...deleteModalState, isOpen: false })}
-                                    disabled={deleteModalState.loading}
-                                >
-                                    Скасувати
-                                </Button>
-                                <Button
-                                    className="danger"
-                                    onClick={handleConfirmDelete}
-                                    loading={deleteModalState.loading}
-                                >
-                                    Видалити
-                                </Button>
-                            </div>
-                        }
                     >
                         <p>Ви впевнені, що хочете видалити вартість харчування за дату <strong>{deleteModalState.itemDate}</strong>?</p>
                     </Modal>

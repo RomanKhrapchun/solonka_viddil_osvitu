@@ -89,21 +89,6 @@
     align-items: center;
 }
 
-/* Суфікс валюти */
-.currency-suffix {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
-    font-weight: 600;
-    color: #6c757d;
-    pointer-events: none;
-    z-index: 2;
-    background: white;
-    padding: 0 4px;
-}
-
 /* Стилі для Input полів */
 .daily-food-cost-modal .currency-input input,
 .daily-food-cost-modal .date-input-enhanced input {
@@ -118,10 +103,9 @@
     box-sizing: border-box !important;
 }
 
-/* Input з валютою має додатковий padding справа */
+/* Input з валютою - видалений додатковий padding справа та text-align */
 .currency-input input {
-    padding-right: 60px !important;
-    text-align: right !important;
+    text-align: left !important;
 }
 
 /* Фокус на полях */
@@ -159,23 +143,6 @@
     border-color: #007bff !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Інформаційне повідомлення */
-.form-info-notice {
-    background: linear-gradient(135deg, #e7f3ff 0%, #cce7ff 100%);
-    border: 1px solid #b8daff;
-    border-radius: 8px;
-    padding: 16px 20px;
-    font-size: 14px;
-    color: #004085;
-    margin-top: 24px;
-    line-height: 1.5;
-    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
-}
-
-.form-info-notice strong {
-    font-weight: 600;
 }
 
 /* Анімації */
@@ -227,15 +194,6 @@
         padding: 12px 14px !important;
         min-height: 48px !important;
     }
-    
-    .currency-input input {
-        padding-right: 55px !important;
-    }
-    
-    .currency-suffix {
-        font-size: 15px;
-        right: 14px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -255,20 +213,6 @@
         padding: 10px 12px !important;
         min-height: 44px !important;
     }
-    
-    .currency-input input {
-        padding-right: 50px !important;
-    }
-    
-    .currency-suffix {
-        font-size: 14px;
-        right: 12px;
-    }
-    
-    .form-info-notice {
-        padding: 12px 16px;
-        font-size: 13px;
-    }
 }
 
 /* Темна тема (опціонально) */
@@ -284,12 +228,6 @@
     
     .form-section--highlighted .form-help {
         color: #adb5bd;
-    }
-    
-    .form-info-notice {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c4866 100%);
-        border-color: #3d5a80;
-        color: #cce7ff;
     }
 }
 
@@ -325,4 +263,35 @@
 
 .daily-food-cost-modal input:focus::placeholder {
     opacity: 0.5;
+}
+
+/* ========================================
+   Виправлення для таблиці
+   ======================================== */
+
+/* Прибираємо підкреслення від заголовка "Дата" */
+.table-elements .sortable-header {
+    border-bottom: none !important;
+    text-decoration: none !important;
+}
+
+.table-elements .sortable-header:hover {
+    border-bottom: none !important;
+}
+
+.table-elements .sortable-header.active {
+    border-bottom: none !important;
+}
+
+/* Виправляємо кнопки дій - ставимо в ряд */
+.actions-group {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.actions-group .btn {
+    flex-shrink: 0;
 }

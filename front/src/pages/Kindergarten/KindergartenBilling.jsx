@@ -16,7 +16,7 @@ import {Transition} from "react-transition-group";
 import Input from "../../components/common/Input/Input";
 import FilterDropdown from "../../components/common/Dropdown/FilterDropdown";
 import "../../components/common/Dropdown/FilterDropdown.css";
-import './DailyFoodCost.css';
+import './KindergartenBilling.css';
 
 // Іконки
 const addIcon = generateIcon(iconMap.add, null, 'currentColor', 20, 20)
@@ -31,24 +31,24 @@ const dropDownStyle = {width: '100%'}
 const childDropDownStyle = {justifyContent: 'center'}
 
 // Константи для збереження стану
-const DAILY_FOOD_COST_STATE_KEY = 'dailyFoodCostState';
+const KINDERGARTEN_BILLING_STATE_KEY = 'kindergartenBillingState';
 
-const saveDailyFoodCostState = (state) => {
+const saveKindergartenBillingState = (state) => {
     try {
-        sessionStorage.setItem(DAILY_FOOD_COST_STATE_KEY, JSON.stringify({
+        sessionStorage.setItem(KINDERGARTEN_BILLING_STATE_KEY, JSON.stringify({
             sendData: state.sendData,
             selectData: state.selectData,
             isFilterOpen: state.isFilterOpen,
             timestamp: Date.now()
         }));
     } catch (error) {
-        console.warn('Failed to save daily food cost state:', error);
+        console.warn('Failed to save kindergarten billing state:', error);
     }
 };
 
-const loadDailyFoodCostState = () => {
+const loadKindergartenBillingState = () => {
     try {
-        const saved = sessionStorage.getItem(DAILY_FOOD_COST_STATE_KEY);
+        const saved = sessionStorage.getItem(KINDERGARTEN_BILLING_STATE_KEY);
         if (saved) {
             const parsed = JSON.parse(saved);
             // Перевіряємо чи дані не старіші 30 хвилин
@@ -57,20 +57,20 @@ const loadDailyFoodCostState = () => {
             }
         }
     } catch (error) {
-        console.warn('Failed to load daily food cost state:', error);
+        console.warn('Failed to load kindergarten billing state:', error);
     }
     return null;
 };
 
-const clearDailyFoodCostState = () => {
+const clearKindergartenBillingState = () => {
     try {
-        sessionStorage.removeItem(DAILY_FOOD_COST_STATE_KEY);
+        sessionStorage.removeItem(KINDERGARTEN_BILLING_STATE_KEY);
     } catch (error) {
-        console.warn('Failed to clear daily food cost state:', error);
+        console.warn('Failed to clear kindergarten billing state:', error);
     }
 };
 
-const DailyFoodCost = () => {
+const KindergartenBilling = () => {
     const navigate = useNavigate()
     const notification = useNotification()
     const {store} = useContext(Context)
@@ -79,9 +79,9 @@ const DailyFoodCost = () => {
     const editModalNodeRef = useRef(null)
     const deleteModalNodeRef = useRef(null)
 
-    // стан для списку вартості харчування
-    const [stateDFC, setStateDFC] = useState(() => {
-        const savedState = loadDailyFoodCostState();
+    // стан для списку батьківської плати
+    const [stateBilling, setStateBilling] = useState(() => {
+        const savedState = loadKindergartenBillingState();
         if (savedState) {
             return {
                 isFilterOpen: savedState.isFilterOpen || false,
@@ -91,8 +91,8 @@ const DailyFoodCost = () => {
                 sendData: savedState.sendData || {
                     limit: 16,
                     page: 1,
-                    sort_by: 'date',
-                    sort_direction: 'desc',
+                    sort_by: 'parent_name',
+                    sort_direction: 'asc',
                 }
             };
         }
@@ -105,8 +105,8 @@ const DailyFoodCost = () => {
             sendData: {
                 limit: 16,
                 page: 1,
-                sort_by: 'date',
-                sort_direction: 'desc',
+                sort_by: 'parent_name',
+                sort_direction: 'asc',
             }
         };
     });
@@ -116,9 +116,11 @@ const DailyFoodCost = () => {
         isOpen: false,
         loading: false,
         formData: {
-            date: '',
-            young_group_cost: '',
-            older_group_cost: ''
+            parent_name: '',
+            payment_month: '',
+            current_debt: '',
+            current_accrual: '',
+            current_payment: ''
         }
     });
 
@@ -128,9 +130,11 @@ const DailyFoodCost = () => {
         loading: false,
         itemId: null,
         formData: {
-            date: '',
-            young_group_cost: '',
-            older_group_cost: ''
+            parent_name: '',
+            payment_month: '',
+            current_debt: '',
+            current_accrual: '',
+            current_payment: ''
         }
     });
 
@@ -139,18 +143,18 @@ const DailyFoodCost = () => {
         isOpen: false,
         loading: false,
         itemId: null,
-        itemDate: ''
+        parentName: ''
     });
 
     const isFirstAPI = useRef(true);
 
-    const {error, status, data, retryFetch} = useFetch('api/kindergarten/daily_food_cost/filter', {
+    const {error, status, data, retryFetch} = useFetch('api/kindergarten/billing/filter', {
         method: 'post',
-        data: stateDFC.sendData
+        data: stateBilling.sendData
     })
     
-    const startRecord = ((stateDFC.sendData.page || 1) - 1) * stateDFC.sendData.limit + 1;
-    const endRecord = Math.min(startRecord + stateDFC.sendData.limit - 1, data?.totalItems || 1);
+    const startRecord = ((stateBilling.sendData.page || 1) - 1) * stateBilling.sendData.limit + 1;
+    const endRecord = Math.min(startRecord + stateBilling.sendData.limit - 1, data?.totalItems || 1);
 
     useEffect(() => {
         if (isFirstAPI.current) {
@@ -158,36 +162,36 @@ const DailyFoodCost = () => {
             return;
         }
         
-        retryFetch('api/kindergarten/daily_food_cost/filter', {
+        retryFetch('api/kindergarten/billing/filter', {
             method: 'post',
-            data: stateDFC.sendData
+            data: stateBilling.sendData
         });
-    }, [stateDFC.sendData, retryFetch]);
+    }, [stateBilling.sendData, retryFetch]);
 
     // Зберігання стану
     useEffect(() => {
-        saveDailyFoodCostState(stateDFC);
-    }, [stateDFC]);
+        saveKindergartenBillingState(stateBilling);
+    }, [stateBilling]);
 
     // Очищення стану при розмонтуванні
     useEffect(() => {
         return () => {
-            clearDailyFoodCostState();
+            clearKindergartenBillingState();
         };
     }, []);
 
     const hasActiveFilters = useMemo(() => {
-        return Object.values(stateDFC.selectData).some(value => 
+        return Object.values(stateBilling.selectData).some(value => 
             value !== null && 
             value !== undefined && 
             value !== '' && 
             (!Array.isArray(value) || value.length > 0)
         );
-    }, [stateDFC.selectData]);
+    }, [stateBilling.selectData]);
 
     const createSortableColumn = (title, dataIndex, render = null, width = null) => {
-        const isActive = stateDFC.sendData.sort_by === dataIndex;
-        const direction = stateDFC.sendData.sort_direction;
+        const isActive = stateBilling.sendData.sort_by === dataIndex;
+        const direction = stateBilling.sendData.sort_direction;
         
         return {
             title: (
@@ -207,14 +211,14 @@ const DailyFoodCost = () => {
     };
 
     const handleSort = useCallback((columnName) => {
-        const currentSort = stateDFC.sendData;
+        const currentSort = stateBilling.sendData;
         let newDirection = 'asc';
         
         if (currentSort.sort_by === columnName) {
             newDirection = currentSort.sort_direction === 'asc' ? 'desc' : 'asc';
         }
         
-        setStateDFC(prevState => ({
+        setStateBilling(prevState => ({
             ...prevState,
             sendData: {
                 ...prevState.sendData,
@@ -223,19 +227,45 @@ const DailyFoodCost = () => {
                 page: 1
             }
         }));
-    }, [stateDFC.sendData]);
+    }, [stateBilling.sendData]);
+
+    // Функція для розрахунку сальдо
+    const calculateBalance = (debt, accrual, payment) => {
+        const totalDebt = parseFloat(debt || 0) + parseFloat(accrual || 0);
+        const totalPayment = parseFloat(payment || 0);
+        return totalDebt - totalPayment;
+    };
 
     const columns = useMemo(() => {
         return [
-            createSortableColumn('Дата', 'date', (date) => {
-                return new Date(date).toLocaleDateString('uk-UA');
+            createSortableColumn('ПІБ батьків', 'parent_name', null, 200),
+            createSortableColumn('Місяць оплати', 'payment_month', (month) => {
+                return new Date(month + '-01').toLocaleDateString('uk-UA', { 
+                    year: 'numeric', 
+                    month: 'long' 
+                });
+            }, 150),
+            createSortableColumn('Борг в поточному періоді', 'current_debt', (debt) => {
+                const amount = parseFloat(debt || 0);
+                return `${amount.toFixed(2)} грн`;
+            }, 180),
+            createSortableColumn('Нараховано в поточному періоді', 'current_accrual', (accrual) => {
+                const amount = parseFloat(accrual || 0);
+                return `${amount.toFixed(2)} грн`;
+            }, 200),
+            createSortableColumn('Оплачено в поточному періоді', 'current_payment', (payment) => {
+                const amount = parseFloat(payment || 0);
+                return `${amount.toFixed(2)} грн`;
+            }, 180),
+            createSortableColumn('Сальдо', 'balance', (_, record) => {
+                const balance = calculateBalance(record.current_debt, record.current_accrual, record.current_payment);
+                const balanceClass = balance > 0 ? 'balance-negative' : balance < 0 ? 'balance-positive' : 'balance-zero';
+                return (
+                    <span className={balanceClass}>
+                        {balance.toFixed(2)} грн
+                    </span>
+                );
             }, 120),
-            createSortableColumn('Молодша група (грн)', 'young_group_cost', (cost) => {
-                return `${parseFloat(cost).toFixed(2)} грн`;
-            }),
-            createSortableColumn('Старша група (грн)', 'older_group_cost', (cost) => {
-                return `${parseFloat(cost).toFixed(2)} грн`;
-            }),
             {
                 title: 'Дії',
                 key: 'actions',
@@ -258,15 +288,15 @@ const DailyFoodCost = () => {
                 )
             }
         ];
-    }, [stateDFC.sendData]);
+    }, [stateBilling.sendData]);
 
     const itemMenu = [
         {
             label: '16',
             key: '16',
             onClick: () => {
-                if (stateDFC.sendData.limit !== 16) {
-                    setStateDFC(prevState => ({
+                if (stateBilling.sendData.limit !== 16) {
+                    setStateBilling(prevState => ({
                         ...prevState,
                         sendData: {
                             ...prevState.sendData,
@@ -281,8 +311,8 @@ const DailyFoodCost = () => {
             label: '32',
             key: '32',
             onClick: () => {
-                if (stateDFC.sendData.limit !== 32) {
-                    setStateDFC(prevState => ({
+                if (stateBilling.sendData.limit !== 32) {
+                    setStateBilling(prevState => ({
                         ...prevState,
                         sendData: {
                             ...prevState.sendData,
@@ -297,8 +327,8 @@ const DailyFoodCost = () => {
             label: '48',
             key: '48',
             onClick: () => {
-                if (stateDFC.sendData.limit !== 48) {
-                    setStateDFC(prevState => ({
+                if (stateBilling.sendData.limit !== 48) {
+                    setStateBilling(prevState => ({
                         ...prevState,
                         sendData: {
                             ...prevState.sendData,
@@ -312,14 +342,14 @@ const DailyFoodCost = () => {
     ];
 
     const closeFilterDropdown = () => {
-        setStateDFC(prevState => ({
+        setStateBilling(prevState => ({
             ...prevState,
             isFilterOpen: false,
         }))
     };
 
     const onHandleChange = (name, value) => {
-        setStateDFC(prevState => ({
+        setStateBilling(prevState => ({
             ...prevState,
             selectData: {
                 ...prevState.selectData,
@@ -329,16 +359,16 @@ const DailyFoodCost = () => {
     };
 
     const applyFilter = () => {
-        const isAnyInputFilled = Object.values(stateDFC.selectData).some(value =>
+        const isAnyInputFilled = Object.values(stateBilling.selectData).some(value =>
             Array.isArray(value) ?
                 value.length > 0 : value
         );
 
         if (!isAnyInputFilled) return;
 
-        const validation = validateFilters(stateDFC.selectData);
+        const validation = validateFilters(stateBilling.selectData);
         if (!validation.error) {
-            setStateDFC(prevState => ({
+            setStateBilling(prevState => ({
                 ...prevState,
                 sendData: {
                     ...validation,
@@ -357,14 +387,14 @@ const DailyFoodCost = () => {
     };
 
     const resetFilters = () => {
-        if (Object.values(stateDFC.selectData).some(value => value)) {
-            setStateDFC(prevState => ({
+        if (Object.values(stateBilling.selectData).some(value => value)) {
+            setStateBilling(prevState => ({
                 ...prevState,
                 selectData: {}
             }));
         }
-        if (!hasOnlyAllowedParams(stateDFC.sendData, ['limit', 'page'])) {
-            setStateDFC(prevState => ({
+        if (!hasOnlyAllowedParams(stateBilling.sendData, ['limit', 'page'])) {
+            setStateBilling(prevState => ({
                 ...prevState,
                 sendData: {
                     limit: prevState.sendData.limit,
@@ -375,7 +405,7 @@ const DailyFoodCost = () => {
     };
 
     const toggleFilter = () => {
-        setStateDFC(prevState => ({
+        setStateBilling(prevState => ({
             ...prevState,
             isFilterOpen: !prevState.isFilterOpen
         }));
@@ -387,9 +417,11 @@ const DailyFoodCost = () => {
             ...prev,
             isOpen: true,
             formData: {
-                date: '',
-                young_group_cost: '',
-                older_group_cost: ''
+                parent_name: '',
+                payment_month: '',
+                current_debt: '',
+                current_accrual: '',
+                current_payment: ''
             }
         }));
         document.body.style.overflow = 'hidden';
@@ -418,9 +450,11 @@ const DailyFoodCost = () => {
             loading: false,
             itemId: record.id,
             formData: {
-                date: record.date || '',
-                young_group_cost: record.young_group_cost || '',
-                older_group_cost: record.older_group_cost || ''
+                parent_name: record.parent_name || '',
+                payment_month: record.payment_month || '',
+                current_debt: record.current_debt || '',
+                current_accrual: record.current_accrual || '',
+                current_payment: record.current_payment || ''
             }
         });
         document.body.style.overflow = 'hidden';
@@ -431,7 +465,7 @@ const DailyFoodCost = () => {
             isOpen: true,
             loading: false,
             itemId: record.id,
-            itemDate: new Date(record.date).toLocaleDateString('uk-UA')
+            parentName: record.parent_name || 'Невідомо'
         });
         document.body.style.overflow = 'hidden';
     };
@@ -441,12 +475,14 @@ const DailyFoodCost = () => {
         setModalState(prev => ({ ...prev, loading: true }));
 
         try {
-            await fetchFunction('api/kindergarten/daily_food_cost', {
+            await fetchFunction('api/kindergarten/billing', {
                 method: 'POST',
                 data: {
-                    date: modalState.formData.date,
-                    young_group_cost: parseFloat(modalState.formData.young_group_cost),
-                    older_group_cost: parseFloat(modalState.formData.older_group_cost)
+                    parent_name: modalState.formData.parent_name,
+                    payment_month: modalState.formData.payment_month,
+                    current_debt: parseFloat(modalState.formData.current_debt || 0),
+                    current_accrual: parseFloat(modalState.formData.current_accrual || 0),
+                    current_payment: parseFloat(modalState.formData.current_payment || 0)
                 }
             });
 
@@ -454,21 +490,21 @@ const DailyFoodCost = () => {
                 type: 'success',
                 placement: 'top',
                 title: 'Успіх',
-                message: 'Вартість харчування успішно додана',
+                message: 'Запис батьківської плати успішно додано',
             });
 
             closeModal();
             
-            retryFetch('api/kindergarten/daily_food_cost/filter', {
+            retryFetch('api/kindergarten/billing/filter', {
                 method: 'post',
-                data: stateDFC.sendData
+                data: stateBilling.sendData
             });
         } catch (error) {
             notification({
                 type: 'error',
                 placement: 'top',
                 title: 'Помилка',
-                message: error.message || 'Не вдалося додати вартість харчування',
+                message: error.message || 'Не вдалося додати запис батьківської плати',
             });
         } finally {
             setModalState(prev => ({ ...prev, loading: false }));
@@ -479,12 +515,14 @@ const DailyFoodCost = () => {
         setEditModalState(prev => ({ ...prev, loading: true }));
 
         try {
-            await fetchFunction(`api/kindergarten/daily_food_cost/${editModalState.itemId}`, {
+            await fetchFunction(`api/kindergarten/billing/${editModalState.itemId}`, {
                 method: 'PUT',
                 data: {
-                    date: editModalState.formData.date,
-                    young_group_cost: parseFloat(editModalState.formData.young_group_cost),
-                    older_group_cost: parseFloat(editModalState.formData.older_group_cost)
+                    parent_name: editModalState.formData.parent_name,
+                    payment_month: editModalState.formData.payment_month,
+                    current_debt: parseFloat(editModalState.formData.current_debt || 0),
+                    current_accrual: parseFloat(editModalState.formData.current_accrual || 0),
+                    current_payment: parseFloat(editModalState.formData.current_payment || 0)
                 }
             });
 
@@ -492,7 +530,7 @@ const DailyFoodCost = () => {
                 type: 'success',
                 placement: 'top',
                 title: 'Успіх',
-                message: 'Вартість харчування успішно оновлена',
+                message: 'Запис батьківської плати успішно оновлено',
             });
 
             setEditModalState({ 
@@ -500,22 +538,24 @@ const DailyFoodCost = () => {
                 loading: false, 
                 itemId: null, 
                 formData: { 
-                    date: '', 
-                    young_group_cost: '', 
-                    older_group_cost: ''
+                    parent_name: '',
+                    payment_month: '',
+                    current_debt: '',
+                    current_accrual: '',
+                    current_payment: ''
                 } 
             });
             
-            retryFetch('api/kindergarten/daily_food_cost/filter', {
+            retryFetch('api/kindergarten/billing/filter', {
                 method: 'post',
-                data: stateDFC.sendData
+                data: stateBilling.sendData
             });
         } catch (error) {
             notification({
                 type: 'error',
                 placement: 'top',
                 title: 'Помилка',
-                message: error.message || 'Не вдалося оновити вартість харчування',
+                message: error.message || 'Не вдалося оновити запис батьківської плати',
             });
         } finally {
             setEditModalState(prev => ({ ...prev, loading: false }));
@@ -526,7 +566,7 @@ const DailyFoodCost = () => {
         setDeleteModalState(prev => ({ ...prev, loading: true }));
 
         try {
-            await fetchFunction(`api/kindergarten/daily_food_cost/${deleteModalState.itemId}`, {
+            await fetchFunction(`api/kindergarten/billing/${deleteModalState.itemId}`, {
                 method: 'DELETE'
             });
 
@@ -534,26 +574,26 @@ const DailyFoodCost = () => {
                 type: 'success',
                 placement: 'top',
                 title: 'Успіх',
-                message: 'Вартість харчування успішно видалена',
+                message: 'Запис батьківської плати успішно видалено',
             });
 
             setDeleteModalState({ 
                 isOpen: false, 
                 loading: false, 
                 itemId: null, 
-                itemDate: '' 
+                parentName: '' 
             });
             
-            retryFetch('api/kindergarten/daily_food_cost/filter', {
+            retryFetch('api/kindergarten/billing/filter', {
                 method: 'post',
-                data: stateDFC.sendData
+                data: stateBilling.sendData
             });
         } catch (error) {
             notification({
                 type: 'error',
                 placement: 'top',
                 title: 'Помилка',
-                message: error.message || 'Не вдалося видалити вартість харчування',
+                message: error.message || 'Не вдалося видалити запис батьківської плати',
             });
         } finally {
             setDeleteModalState(prev => ({ ...prev, loading: false }));
@@ -561,7 +601,7 @@ const DailyFoodCost = () => {
     };
 
     const handlePageChange = useCallback((page) => {
-        setStateDFC(prevState => ({
+        setStateBilling(prevState => ({
             ...prevState,
             sendData: {
                 ...prevState.sendData,
@@ -598,14 +638,14 @@ const DailyFoodCost = () => {
                                 <Button
                                     onClick={openModal}
                                     icon={addIcon}>
-                                    Додати вартість
+                                    Додати запис
                                 </Button>
                                 <Dropdown
                                     icon={dropDownIcon}
                                     iconPosition="right"
                                     style={dropDownStyle}
                                     childStyle={childDropDownStyle}
-                                    caption={`Записів: ${stateDFC.sendData.limit}`}
+                                    caption={`Записів: ${stateBilling.sendData.limit}`}
                                     menu={itemMenu}/>
                                 <Button
                                     className={`table-filter-trigger ${hasActiveFilters ? 'active' : ''}`}
@@ -617,29 +657,40 @@ const DailyFoodCost = () => {
                         </div>
                         <FilterDropdown
                             nodeRef={nodeRef}
-                            isOpen={stateDFC.isFilterOpen}
+                            isOpen={stateBilling.isFilterOpen}
                             onClose={closeFilterDropdown}>
-                            <div className={`table-filter ${stateDFC.isFilterOpen ? "table-filter--active" : ""}`}>
+                            <div className={`table-filter ${stateBilling.isFilterOpen ? "table-filter--active" : ""}`}>
                                 <h3 className="title title--sm">Фільтри</h3>
                                 <div className="btn-group">
                                     <Button onClick={applyFilter}>Застосувати</Button>
                                     <Button className="btn--secondary" onClick={resetFilters}>Скинути</Button>
                                 </div>
                                 <div className="table-filter__item">
-                                    <h4 className="input-description">Дата від</h4>
+                                    <h4 className="input-description">ПІБ батьків</h4>
                                     <Input
-                                        name="date_from"
-                                        type="date"
-                                        value={stateDFC.selectData?.date_from || ''}
+                                        icon={searchIcon}
+                                        name="parent_name"
+                                        type="text"
+                                        placeholder="Введіть ПІБ батьків"
+                                        value={stateBilling.selectData?.parent_name || ''}
                                         onChange={onHandleChange}
                                     />
                                 </div>
                                 <div className="table-filter__item">
-                                    <h4 className="input-description">Дата до</h4>
+                                    <h4 className="input-description">Місяць від</h4>
                                     <Input
-                                        name="date_to"
-                                        type="date"
-                                        value={stateDFC.selectData?.date_to || ''}
+                                        name="month_from"
+                                        type="month"
+                                        value={stateBilling.selectData?.month_from || ''}
+                                        onChange={onHandleChange}
+                                    />
+                                </div>
+                                <div className="table-filter__item">
+                                    <h4 className="input-description">Місяць до</h4>
+                                    <Input
+                                        name="month_to"
+                                        type="month"
+                                        value={stateBilling.selectData?.month_to || ''}
                                         onChange={onHandleChange}
                                     />
                                 </div>
@@ -652,15 +703,15 @@ const DailyFoodCost = () => {
                             loading={status === STATUS.PENDING}/>
                         <Pagination 
                             total={data?.totalItems || 0}
-                            current={stateDFC.sendData.page}
-                            pageSize={stateDFC.sendData.limit}
+                            current={stateBilling.sendData.page}
+                            pageSize={stateBilling.sendData.limit}
                             onChange={handlePageChange}
                         />
                     </div>
                 </React.Fragment>
                 : null}
 
-            {/* Модальне вікно додавання - БЕЗ ПІДКАЗКИ ТА ВАЛЮТНОГО СУФІКСА */}
+            {/* Модальне вікно додавання */}
             <Transition in={modalState.isOpen} timeout={200} unmountOnExit nodeRef={modalNodeRef}>
                 {state => (
                     <Modal
@@ -671,72 +722,86 @@ const DailyFoodCost = () => {
                         confirmLoading={modalState.loading}
                         cancelText="Відхилити"
                         okText="Зберегти"
-                        title="Додати вартість харчування"
+                        title="Додати батьківську плату"
                     >
-                        <div className="daily-food-cost-modal">
-                            <div className="form-section form-section--highlighted">
+                        <div className="kindergarten-billing-modal">
+                            <div className="form-section">
                                 <label className="form-label">
-                                    📅 Дата харчування <span className="required-mark">*</span>
+                                    👤 ПІБ батьків <span className="required-mark">*</span>
                                 </label>
                                 <Input
-                                    type="date"
-                                    name="date"
-                                    value={modalState.formData.date}
+                                    type="text"
+                                    name="parent_name"
+                                    value={modalState.formData.parent_name}
                                     onChange={handleModalInputChange}
-                                    placeholder="Оберіть дату"
+                                    placeholder="Введіть ПІБ батьків"
                                     required
-                                    className="date-input-enhanced"
                                 />
-                                <small className="form-help">Оберіть дату для якої вказується вартість харчування</small>
                             </div>
                             
                             <div className="form-section">
                                 <label className="form-label">
-                                    👶 Вартість для молодшої групи <span className="required-mark">*</span>
+                                    📅 Місяць оплати <span className="required-mark">*</span>
                                 </label>
-                                <div className="currency-input-container">
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="999999"
-                                        name="young_group_cost"
-                                        value={modalState.formData.young_group_cost}
-                                        onChange={handleModalInputChange}
-                                        placeholder="0.00"
-                                        required
-                                        className="currency-input"
-                                    />
-                                </div>
-                                <small className="form-help">Вартість харчування на одну дитину молодшої групи за день</small>
+                                <Input
+                                    type="month"
+                                    name="payment_month"
+                                    value={modalState.formData.payment_month}
+                                    onChange={handleModalInputChange}
+                                    required
+                                />
                             </div>
                             
                             <div className="form-section">
                                 <label className="form-label">
-                                    🧒 Вартість для старшої групи <span className="required-mark">*</span>
+                                    📊 Борг в поточному періоді
                                 </label>
-                                <div className="currency-input-container">
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="999999"
-                                        name="older_group_cost"
-                                        value={modalState.formData.older_group_cost}
-                                        onChange={handleModalInputChange}
-                                        placeholder="0.00"
-                                        required
-                                        className="currency-input"
-                                    />
-                                </div>
-                                <small className="form-help">Вартість харчування на одну дитину старшої групи за день</small>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    name="current_debt"
+                                    value={modalState.formData.current_debt}
+                                    onChange={handleModalInputChange}
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    💰 Нараховано в поточному періоді
+                                </label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    name="current_accrual"
+                                    value={modalState.formData.current_accrual}
+                                    onChange={handleModalInputChange}
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    💳 Оплачено в поточному періоді
+                                </label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    name="current_payment"
+                                    value={modalState.formData.current_payment}
+                                    onChange={handleModalInputChange}
+                                    placeholder="0.00"
+                                />
                             </div>
                         </div>
                     </Modal>
                 )}
             </Transition>
 
-            {/* Модальне вікно редагування - БЕЗ ПІДКАЗКИ ТА ВАЛЮТНОГО СУФІКСА */}
+            {/* Модальне вікно редагування */}
             <Transition in={editModalState.isOpen} timeout={200} unmountOnExit nodeRef={editModalNodeRef}>
                 {state => (
                     <Modal
@@ -747,68 +812,94 @@ const DailyFoodCost = () => {
                         confirmLoading={editModalState.loading}
                         cancelText="Відхилити"
                         okText="Оновити"
-                        title="Редагувати вартість харчування"
+                        title="Редагувати батьківську плату"
                     >
-                        <div className="daily-food-cost-modal">
+                        <div className="kindergarten-billing-modal">
                             <div className="form-section">
                                 <label className="form-label">
-                                    📅 Дата харчування <span className="required-mark">*</span>
+                                    👤 ПІБ батьків <span className="required-mark">*</span>
                                 </label>
                                 <Input
-                                    type="date"
-                                    name="date"
-                                    value={editModalState.formData.date}
+                                    type="text"
+                                    name="parent_name"
+                                    value={editModalState.formData.parent_name}
                                     onChange={(field, value) => setEditModalState(prev => ({
                                         ...prev,
                                         formData: { ...prev.formData, [field]: value }
                                     }))}
+                                    placeholder="Введіть ПІБ батьків"
                                     required
-                                    className="date-input-enhanced"
                                 />
                             </div>
                             
                             <div className="form-section">
                                 <label className="form-label">
-                                    👶 Вартість для молодшої групи <span className="required-mark">*</span>
+                                    📅 Місяць оплати <span className="required-mark">*</span>
                                 </label>
-                                <div className="currency-input-container">
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="999999"
-                                        name="young_group_cost"
-                                        value={editModalState.formData.young_group_cost}
-                                        onChange={(field, value) => setEditModalState(prev => ({
-                                            ...prev,
-                                            formData: { ...prev.formData, [field]: value }
-                                        }))}
-                                        required
-                                        className="currency-input"
-                                    />
-                                </div>
+                                <Input
+                                    type="month"
+                                    name="payment_month"
+                                    value={editModalState.formData.payment_month}
+                                    onChange={(field, value) => setEditModalState(prev => ({
+                                        ...prev,
+                                        formData: { ...prev.formData, [field]: value }
+                                    }))}
+                                    required
+                                />
                             </div>
                             
                             <div className="form-section">
                                 <label className="form-label">
-                                    🧒 Вартість для старшої групи <span className="required-mark">*</span>
+                                    📊 Борг в поточному періоді
                                 </label>
-                                <div className="currency-input-container">
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="999999"
-                                        name="older_group_cost"
-                                        value={editModalState.formData.older_group_cost}
-                                        onChange={(field, value) => setEditModalState(prev => ({
-                                            ...prev,
-                                            formData: { ...prev.formData, [field]: value }
-                                        }))}
-                                        required
-                                        className="currency-input"
-                                    />
-                                </div>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    name="current_debt"
+                                    value={editModalState.formData.current_debt}
+                                    onChange={(field, value) => setEditModalState(prev => ({
+                                        ...prev,
+                                        formData: { ...prev.formData, [field]: value }
+                                    }))}
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    💰 Нараховано в поточному періоді
+                                </label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    name="current_accrual"
+                                    value={editModalState.formData.current_accrual}
+                                    onChange={(field, value) => setEditModalState(prev => ({
+                                        ...prev,
+                                        formData: { ...prev.formData, [field]: value }
+                                    }))}
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            
+                            <div className="form-section">
+                                <label className="form-label">
+                                    💳 Оплачено в поточному періоді
+                                </label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    name="current_payment"
+                                    value={editModalState.formData.current_payment}
+                                    onChange={(field, value) => setEditModalState(prev => ({
+                                        ...prev,
+                                        formData: { ...prev.formData, [field]: value }
+                                    }))}
+                                    placeholder="0.00"
+                                />
                             </div>
                         </div>
                     </Modal>
@@ -828,7 +919,7 @@ const DailyFoodCost = () => {
                         okText="Видалити"
                         title="Підтвердження видалення"
                     >
-                        <p>Ви впевнені, що хочете видалити вартість харчування за дату <strong>{deleteModalState.itemDate}</strong>?</p>
+                        <p>Ви впевнені, що хочете видалити запис батьківської плати для <strong>{deleteModalState.parentName}</strong>?</p>
                     </Modal>
                 )}
             </Transition>
@@ -836,4 +927,4 @@ const DailyFoodCost = () => {
     );
 };
 
-export default DailyFoodCost;
+export default KindergartenBilling;

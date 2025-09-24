@@ -373,7 +373,7 @@ class KindergartenService {
             uid: request?.user?.id,
             action: 'DELETE',
             client_addr: request?.ip,
-            application_name: 'Видалення запису дитини',
+            application_name: 'Видалення дитини',
             action_stamp_tx: new Date(),
             action_stamp_stm: new Date(),
             action_stamp_clk: new Date(),
@@ -386,7 +386,7 @@ class KindergartenService {
     }
 
     // ===============================
-    // МЕТОДИ ДЛЯ ВІДВІДУВАНОСТІ САДОЧКА
+    // МЕТОДИ ДЛЯ ВІДВІДУВАНОСТІ
     // ===============================
 
     async findAttendanceByFilter(request) {
@@ -413,7 +413,7 @@ class KindergartenService {
                 uid: request?.user?.id,
                 action: 'SEARCH',
                 client_addr: request?.ip,
-                application_name: 'Пошук відвідуваності садочку',
+                application_name: 'Пошук відвідуваності',
                 action_stamp_tx: new Date(),
                 action_stamp_stm: new Date(),
                 action_stamp_clk: new Date(),
@@ -466,10 +466,7 @@ class KindergartenService {
         }
 
         // Перевіряємо чи не існує запис на цю дату для цієї дитини
-        const existingAttendance = await KindergartenRepository.getAttendanceByDateAndChild(
-            date, 
-            child_id
-        );
+        const existingAttendance = await KindergartenRepository.getAttendanceByDateAndChild(date, child_id);
 
         if (existingAttendance && existingAttendance.length > 0) {
             throw new Error('Запис відвідуваності на цю дату для цієї дитини вже існує');
@@ -479,13 +476,13 @@ class KindergartenService {
             date,
             child_id,
             attendance_status,
-            notes: notes || null,
+            notes,
             created_at: new Date()
         };
 
         const result = await KindergartenRepository.createAttendance(attendanceData);
 
-        // Логування створення запису відвідуваності
+        // Логування створення
         await logRepository.createLog({
             row_pk_id: result.insertId || result.id,
             uid: request?.user?.id,
@@ -507,9 +504,9 @@ class KindergartenService {
         const { id } = request.params;
         const updateData = request.body;
 
-        // Перевіряємо чи існує запис відвідуваності
-        const existingAttendance = await KindergartenRepository.getAttendanceById(id);
-        if (!existingAttendance || existingAttendance.length === 0) {
+        // Перевіряємо чи існує запис
+        const existingRecord = await KindergartenRepository.getAttendanceById(id);
+        if (!existingRecord || existingRecord.length === 0) {
             throw new Error('Запис відвідуваності не знайдено');
         }
 
@@ -523,13 +520,13 @@ class KindergartenService {
 
         // Якщо змінюється дата або дитина, перевіряємо на дублікати
         if (updateData.date && updateData.child_id) {
-            const duplicateAttendance = await KindergartenRepository.getAttendanceByDateAndChild(
+            const duplicateRecord = await KindergartenRepository.getAttendanceByDateAndChild(
                 updateData.date, 
                 updateData.child_id,
                 id // виключаємо поточний запис
             );
 
-            if (duplicateAttendance && duplicateAttendance.length > 0) {
+            if (duplicateRecord && duplicateRecord.length > 0) {
                 throw new Error('Запис відвідуваності на цю дату для цієї дитини вже існує');
             }
         }
@@ -557,9 +554,9 @@ class KindergartenService {
     async deleteAttendance(request) {
         const { id } = request.params;
 
-        // Перевіряємо чи існує запис відвідуваності
-        const existingAttendance = await KindergartenRepository.getAttendanceById(id);
-        if (!existingAttendance || existingAttendance.length === 0) {
+        // Перевіряємо чи існує запис
+        const existingRecord = await KindergartenRepository.getAttendanceById(id);
+        if (!existingRecord || existingRecord.length === 0) {
             throw new Error('Запис відвідуваності не знайдено');
         }
 
@@ -634,8 +631,7 @@ class KindergartenService {
         const {
             date,
             young_group_cost,
-            older_group_cost,
-            notes
+            older_group_cost
         } = request.body;
 
         // Перевіряємо чи не існує запис з такою датою
@@ -649,7 +645,6 @@ class KindergartenService {
             date,
             young_group_cost,
             older_group_cost,
-            notes,
             created_at: new Date()
         };
 
@@ -687,7 +682,7 @@ class KindergartenService {
         if (updateData.date) {
             const duplicateRecord = await KindergartenRepository.getDailyFoodCostByDateAndExcludeId(
                 updateData.date, 
-                id // виключаємо поточний запис
+                id
             );
 
             if (duplicateRecord && duplicateRecord.length > 0) {

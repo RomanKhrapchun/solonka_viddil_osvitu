@@ -164,11 +164,12 @@ const childrenFilterSchema = {
         },
         phone_number: {
             type: 'string',
+            pattern: '^[0-9\\s\\-\\(\\)]{10,20}$',
             optional: true,
-            min: 1,
         },
         group_id: {
             type: 'number',
+            minimum: 1,
             optional: true,
         },
     }
@@ -188,9 +189,8 @@ const childrenCreateSchema = {
         },
         phone_number: {
             type: 'string',
-            min: 10,
-            max: 20,
-            pattern: '^[+]?[0-9\\s\\-\\(\\)]{10,20}$'
+            pattern: '^[0-9\\s\\-\\(\\)]{10,20}$',
+            optional: true,
         },
         group_id: {
             type: 'number',
@@ -221,9 +221,7 @@ const childrenUpdateSchema = {
         },
         phone_number: {
             type: 'string',
-            min: 10,
-            max: 20, // Збільшено з 15 до 20
-            pattern: '^[+]?[0-9\\s\\-\\(\\)]{10,20}$', // Збільшено ліміт паттерну
+            pattern: '^[0-9\\s\\-\\(\\)]{10,20}$',
             optional: true,
         },
         group_id: {
@@ -242,6 +240,10 @@ const childrenDeleteSchema = {
         }
     }
 }
+
+// ===============================
+// СХЕМИ ДЛЯ ВІДВІДУВАНОСТІ
+// ===============================
 
 const attendanceInfoSchema = {
     params: {
@@ -364,6 +366,10 @@ const attendanceDeleteSchema = {
     }
 }
 
+// ===============================
+// СХЕМИ ДЛЯ ВАРТОСТІ ХАРЧУВАННЯ
+// ===============================
+
 const dailyFoodCostFilterSchema = {
     body: {
         page: {
@@ -411,11 +417,6 @@ const dailyFoodCostCreateSchema = {
             minimum: 0,
             maximum: 9999.99,
         },
-        notes: {
-            type: 'string',
-            optional: true,
-            max: 1000,
-        },
     }
 }
 
@@ -443,11 +444,6 @@ const dailyFoodCostUpdateSchema = {
             minimum: 0,
             maximum: 9999.99,
             optional: true,
-        },
-        notes: {
-            type: 'string',
-            optional: true,
-            max: 1000,
         },
     }
 }

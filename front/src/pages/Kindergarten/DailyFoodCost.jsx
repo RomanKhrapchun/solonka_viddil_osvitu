@@ -14,7 +14,6 @@ import SkeletonPage from "../../components/common/Skeleton/SkeletonPage";
 import Modal from "../../components/common/Modal/Modal.jsx";
 import {Transition} from "react-transition-group";
 import Input from "../../components/common/Input/Input";
-import Select from "../../components/common/Select/Select";
 import FilterDropdown from "../../components/common/Dropdown/FilterDropdown";
 import "../../components/common/Dropdown/FilterDropdown.css";
 
@@ -119,8 +118,7 @@ const DailyFoodCost = () => {
         formData: {
             date: '',
             young_group_cost: '',
-            older_group_cost: '',
-            notes: ''
+            older_group_cost: ''
         }
     });
 
@@ -132,8 +130,7 @@ const DailyFoodCost = () => {
         formData: {
             date: '',
             young_group_cost: '',
-            older_group_cost: '',
-            notes: ''
+            older_group_cost: ''
         }
     });
 
@@ -177,6 +174,15 @@ const DailyFoodCost = () => {
             clearDailyFoodCostState();
         };
     }, []);
+
+    const hasActiveFilters = useMemo(() => {
+        return Object.values(stateDFC.selectData).some(value => 
+            value !== null && 
+            value !== undefined && 
+            value !== '' && 
+            (!Array.isArray(value) || value.length > 0)
+        );
+    }, [stateDFC.selectData]);
 
     const createSortableColumn = (title, dataIndex, render = null, width = null) => {
         const isActive = stateDFC.sendData.sort_by === dataIndex;
@@ -223,6 +229,7 @@ const DailyFoodCost = () => {
             {
                 title: 'Дата',
                 dataIndex: 'date',
+                width: 120,
                 render: (date) => {
                     return new Date(date).toLocaleDateString('uk-UA');
                 }
@@ -257,6 +264,126 @@ const DailyFoodCost = () => {
         ];
     }, [stateDFC.sendData]);
 
+    const itemMenu = [
+        {
+            label: '16',
+            key: '16',
+            onClick: () => {
+                if (stateDFC.sendData.limit !== 16) {
+                    setStateDFC(prevState => ({
+                        ...prevState,
+                        sendData: {
+                            ...prevState.sendData,
+                            limit: 16,
+                            page: 1,
+                        }
+                    }))
+                }
+            },
+        },
+        {
+            label: '32',
+            key: '32',
+            onClick: () => {
+                if (stateDFC.sendData.limit !== 32) {
+                    setStateDFC(prevState => ({
+                        ...prevState,
+                        sendData: {
+                            ...prevState.sendData,
+                            limit: 32,
+                            page: 1,
+                        }
+                    }))
+                }
+            },
+        },
+        {
+            label: '48',
+            key: '48',
+            onClick: () => {
+                if (stateDFC.sendData.limit !== 48) {
+                    setStateDFC(prevState => ({
+                        ...prevState,
+                        sendData: {
+                            ...prevState.sendData,
+                            limit: 48,
+                            page: 1,
+                        }
+                    }))
+                }
+            },
+        },
+    ];
+
+    const closeFilterDropdown = () => {
+        setStateDFC(prevState => ({
+            ...prevState,
+            isFilterOpen: false,
+        }))
+    };
+
+    const onHandleChange = (name, value) => {
+        setStateDFC(prevState => ({
+            ...prevState,
+            selectData: {
+                ...prevState.selectData,
+                [name]: value
+            }
+        }))
+    };
+
+    const applyFilter = () => {
+        const isAnyInputFilled = Object.values(stateDFC.selectData).some(value =>
+            Array.isArray(value) ? value.length > 0 : value
+        );
+
+        if (!isAnyInputFilled) return;
+
+        const validation = validateFilters(stateDFC.selectData);
+        if (!validation.error) {
+            setStateDFC(prevState => ({
+                ...prevState,
+                sendData: {
+                    ...validation,
+                    limit: prevState.sendData.limit,
+                    page: 1
+                }
+            }));
+        } else {
+            notification({
+                type: 'warning',
+                placement: 'top',
+                title: 'Помилка',
+                message: validation.message ?? 'Щось пішло не так.',
+            });
+        }
+    };
+
+    const resetFilters = () => {
+        if (Object.values(stateDFC.selectData).some(value => value)) {
+            setStateDFC(prevState => ({
+                ...prevState,
+                selectData: {}
+            }));
+        }
+        if (!hasOnlyAllowedParams(stateDFC.sendData, ['limit', 'page'])) {
+            setStateDFC(prevState => ({
+                ...prevState,
+                sendData: {
+                    limit: prevState.sendData.limit,
+                    page: 1
+                }
+            }));
+        }
+    };
+
+    const toggleFilter = () => {
+        setStateDFC(prevState => ({
+            ...prevState,
+            isFilterOpen: !prevState.isFilterOpen
+        }));
+    };
+
     // Обробники для модальних вікон
     const handleAdd = () => {
         setModalState({
@@ -265,8 +392,7 @@ const DailyFoodCost = () => {
             formData: {
                 date: '',
                 young_group_cost: '',
-                older_group_cost: '',
-                notes: ''
+                older_group_cost: ''
             }
         });
     };
@@ -277,10 +403,9 @@ const DailyFoodCost = () => {
             loading: false,
             itemId: record.id,
             formData: {
-                date: record.date,
-                young_group_cost: record.young_group_cost,
-                older_group_cost: record.older_group_cost,
-                notes: record.notes || ''
+                date: record.date || '',
+                young_group_cost: record.young_group_cost || '',
+                older_group_cost: record.older_group_cost || ''
             }
         });
     };
@@ -304,8 +429,7 @@ const DailyFoodCost = () => {
                 data: {
                     date: modalState.formData.date,
                     young_group_cost: parseFloat(modalState.formData.young_group_cost),
-                    older_group_cost: parseFloat(modalState.formData.older_group_cost),
-                    notes: modalState.formData.notes
+                    older_group_cost: parseFloat(modalState.formData.older_group_cost)
                 }
             });
 
@@ -322,8 +446,7 @@ const DailyFoodCost = () => {
                 formData: { 
                     date: '', 
                     young_group_cost: '', 
-                    older_group_cost: '', 
-                    notes: '' 
+                    older_group_cost: ''
                 } 
             });
             
@@ -352,8 +475,7 @@ const DailyFoodCost = () => {
                 data: {
                     date: editModalState.formData.date,
                     young_group_cost: parseFloat(editModalState.formData.young_group_cost),
-                    older_group_cost: parseFloat(editModalState.formData.older_group_cost),
-                    notes: editModalState.formData.notes
+                    older_group_cost: parseFloat(editModalState.formData.older_group_cost)
                 }
             });
 
@@ -371,8 +493,7 @@ const DailyFoodCost = () => {
                 formData: { 
                     date: '', 
                     young_group_cost: '', 
-                    older_group_cost: '', 
-                    notes: '' 
+                    older_group_cost: ''
                 } 
             });
             
@@ -430,29 +551,6 @@ const DailyFoodCost = () => {
         }
     };
 
-    // Функції для фільтрації
-    const handleDateFromChange = useCallback((_, value) => {
-        setStateDFC(prevState => ({
-            ...prevState,
-            sendData: {
-                ...prevState.sendData,
-                date_from: value,
-                page: 1
-            }
-        }));
-    }, []);
-
-    const handleDateToChange = useCallback((_, value) => {
-        setStateDFC(prevState => ({
-            ...prevState,
-            sendData: {
-                ...prevState.sendData,
-                date_to: value,
-                page: 1
-            }
-        }));
-    }, []);
-
     const handlePageChange = useCallback((page) => {
         setStateDFC(prevState => ({
             ...prevState,
@@ -462,33 +560,6 @@ const DailyFoodCost = () => {
             }
         }));
     }, []);
-
-    const toggleFilter = () => {
-        setStateDFC(prevState => ({
-            ...prevState,
-            isFilterOpen: !prevState.isFilterOpen
-        }));
-    };
-
-    // Фільтр контент для FilterDropdown
-    const renderFilterContent = () => (
-        <div className="filter-content">
-            <div className="filter-row">
-                <Input
-                    label="Дата від"
-                    type="date"
-                    value={stateDFC.sendData.date_from || ''}
-                    onChange={handleDateFromChange}
-                />
-                <Input
-                    label="Дата до"
-                    type="date"
-                    value={stateDFC.sendData.date_to || ''}
-                    onChange={handleDateToChange}
-                />
-            </div>
-        </div>
-    );
 
     if (status === STATUS.PENDING) {
         return <SkeletonPage />
@@ -502,45 +573,67 @@ const DailyFoodCost = () => {
 
     return (
         <React.Fragment>
-            <div className="page-header">
-                <div className="page-header-content">
-                    <h1 className="page-title">Вартість харчування</h1>
-                    <div className="page-header-actions">
-                        <FilterDropdown
-                            icon={filterIcon}
-                            content={renderFilterContent()}
-                            isOpen={stateDFC.isFilterOpen}
-                            onToggle={toggleFilter}
-                        />
-                        <Button
-                            icon={addIcon}
-                            onClick={handleAdd}
-                        >
-                            Додати вартість
-                        </Button>
-                    </div>
-                </div>
-                <div className="page-meta">
-                    <span className="table-meta">
-                        Показано {startRecord}-{endRecord} з {data?.totalItems || 0} записів
-                    </span>
-                </div>
-            </div>
+            {status === STATUS.PENDING ? <SkeletonPage/> : null}
+            {status === STATUS.SUCCESS ?
+                <React.Fragment>
+                    <div className="table-elements">
+                        <div className="table-header">
+                            <h2 className="title title--sm">
+                                {data?.items && Array.isArray(data?.items) && data?.items.length > 0 ?
+                                    <React.Fragment>
+                                        Показує {startRecord !== endRecord ? `${startRecord}-${endRecord}` : startRecord} з {data?.totalItems || 1}
+                                    </React.Fragment> : <React.Fragment>Записів не знайдено</React.Fragment>
+                                }
+                            </h2>
+                            <div className="table-header__buttons">
+                                <Button
+                                    onClick={handleAdd}
+                                    icon={addIcon}>
+                                    Додати вартість
+                                </Button>
+                                <Dropdown
+                                    icon={dropDownIcon}
+                                    iconPosition="right"
+                                    style={dropDownStyle}
+                                    childStyle={childDropDownStyle}
+                                    caption={`Записів: ${stateDFC.sendData.limit}`}
+                                    menu={itemMenu}/>
+                                <Button
+                                    className={`table-filter-trigger ${hasActiveFilters ? 'has-active-filters' : ''}`}
+                                    onClick={toggleFilter}
+                                    icon={filterIcon}>
+                                    Фільтри {hasActiveFilters && `(${Object.keys(stateDFC.selectData).filter(key => stateDFC.selectData[key]).length})`}
+                                </Button>
 
-            <div className="table-main">
-                <div className="table-and-pagination-wrapper">
-                    <div className="table-wrapper">
-                        <Table columns={columns} dataSource={tableData}/>
+                                {/* Dropdown фільтр */}
+                                <FilterDropdown
+                                    isOpen={stateDFC.isFilterOpen}
+                                    onClose={closeFilterDropdown}
+                                    filterData={stateDFC.selectData}
+                                    onFilterChange={onHandleChange}
+                                    onApplyFilter={applyFilter}
+                                    onResetFilters={resetFilters}
+                                    searchIcon={searchIcon}
+                                />
+                            </div>
+                        </div>
+                        <div className="table-main">
+                            <div className="table-and-pagination-wrapper">
+                                <div className="table-wrapper">
+                                    <Table columns={columns} dataSource={tableData}/>
+                                </div>
+                                <Pagination
+                                    className="m-b"
+                                    currentPage={parseInt(data?.currentPage) || 1}
+                                    totalCount={data?.totalItems || 1}
+                                    pageSize={stateDFC.sendData.limit}
+                                    onPageChange={handlePageChange}
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <Pagination
-                        className="m-b"
-                        currentPage={parseInt(data?.currentPage) || 1}
-                        totalCount={data?.totalItems || 1}
-                        pageSize={stateDFC.sendData.limit}
-                        onPageChange={handlePageChange}
-                    />
-                </div>
-            </div>
+                </React.Fragment> : null
+            }
 
             {/* Модальне вікно додавання */}
             <Transition in={modalState.isOpen} timeout={200} unmountOnExit nodeRef={modalNodeRef}>
@@ -603,16 +696,6 @@ const DailyFoodCost = () => {
                                     formData: { ...prev.formData, older_group_cost: value }
                                 }))}
                                 required
-                            />
-                            <Input
-                                label="Примітки"
-                                type="textarea"
-                                value={modalState.formData.notes}
-                                onChange={(_, value) => setModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, notes: value }
-                                }))}
-                                maxLength={1000}
                             />
                         </div>
                     </Modal>
@@ -681,16 +764,6 @@ const DailyFoodCost = () => {
                                 }))}
                                 required
                             />
-                            <Input
-                                label="Примітки"
-                                type="textarea"
-                                value={editModalState.formData.notes}
-                                onChange={(_, value) => setEditModalState(prev => ({
-                                    ...prev,
-                                    formData: { ...prev.formData, notes: value }
-                                }))}
-                                maxLength={1000}
-                            />
                         </div>
                     </Modal>
                 )}
@@ -723,8 +796,7 @@ const DailyFoodCost = () => {
                             </div>
                         }
                     >
-                        <p>Ви впевнені, що хочете видалити вартість харчування за <strong>{deleteModalState.itemDate}</strong>?</p>
-                        <p>Цю дію неможливо скасувати.</p>
+                        <p>Ви впевнені, що хочете видалити вартість харчування за дату <strong>{deleteModalState.itemDate}</strong>?</p>
                     </Modal>
                 )}
             </Transition>

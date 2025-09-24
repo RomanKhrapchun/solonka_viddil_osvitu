@@ -232,9 +232,9 @@ class KindergartenRepository {
                     'parent_name', cr.parent_name,
                     'phone_number', cr.phone_number,
                     'group_id', cr.group_id,
+                    'created_at', cr.created_at,
                     'group_name', kg.group_name,
-                    'kindergarten_name', kg.kindergarten_name,
-                    'created_at', cr.created_at
+                    'kindergarten_name', kg.kindergarten_name
                 ) as rw,
                 count(*) over () as cnt
             from ower.children_roster cr
@@ -264,7 +264,7 @@ class KindergartenRepository {
         }
 
         // Додаємо сортування
-        const allowedSortFields = ['id', 'child_name', 'parent_name', 'phone_number', 'group_id', 'created_at'];
+        const allowedSortFields = ['id', 'child_name', 'parent_name', 'phone_number', 'created_at'];
         const validSortBy = allowedSortFields.includes(sort_by) ? sort_by : 'id';
         const validSortDirection = ['asc', 'desc'].includes(sort_direction.toLowerCase()) ? sort_direction.toUpperCase() : 'DESC';
         
@@ -369,71 +369,47 @@ class KindergartenRepository {
         return await sqlRequest(sql, [id]);
     }
 
-    async getChildrenByGroupId(groupId) {
-        const sql = `
-            SELECT 
-                cr.id, 
-                cr.child_name, 
-                cr.parent_name, 
-                cr.phone_number, 
-                cr.group_id,
-                cr.created_at
-            FROM ower.children_roster cr
-            WHERE cr.group_id = ?
-            ORDER BY cr.child_name ASC
-        `;
-        return await sqlRequest(sql, [groupId]);
-    }
-
-    async countChildrenInGroup(groupId) {
-        const sql = `
-            SELECT COUNT(*) as children_count 
-            FROM ower.children_roster 
-            WHERE group_id = ?
-        `;
-        return await sqlRequest(sql, [groupId]);
-    }
-
     // ===============================
-    // МЕТОДИ ДЛЯ ВІДВІДУВАНОСТІ САДОЧКА
+    // МЕТОДИ ДЛЯ ВІДВІДУВАНОСТІ
     // ===============================
 
-    async findAttendanceByFilter(params) {
+    async findAttendanceByFilter(options) {
         const {
             limit,
             offset,
-            sort_by,
-            sort_direction,
+            sort_by = 'date',
+            sort_direction = 'desc',
             child_name,
             group_name,
             date_from,
             date_to,
             attendance_status,
-            child_id,
-            ...whereConditions
-        } = params;
-
-        let sql = `
-            SELECT COUNT(*) OVER() as total,
-            (SELECT 
-                a.id, 
-                a.date, 
-                a.child_id,
-                a.attendance_status,
-                a.notes,
-                a.created_at,
-                cr.child_name,
-                cr.parent_name,
-                kg.group_name,
-                kg.kindergarten_name
-            FROM ower.attendance a
-            LEFT JOIN ower.children_roster cr ON cr.id = a.child_id
-            LEFT JOIN ower.kindergarten_groups kg ON kg.id = cr.group_id
-            WHERE 1=1
-        `;
+            child_id
+        } = options;
 
         const values = [];
-        let paramIndex = 1;
+        let sql = `
+            select json_agg(rw) as data,
+                max(cnt) as count
+                from (
+                select json_build_object(
+                    'id', a.id,
+                    'date', a.date,
+                    'child_id', a.child_id,
+                    'attendance_status', a.attendance_status,
+                    'notes', a.notes,
+                    'created_at', a.created_at,
+                    'child_name', cr.child_name,
+                    'parent_name', cr.parent_name,
+                    'group_name', kg.group_name,
+                    'kindergarten_name', kg.kindergarten_name
+                ) as rw,
+                count(*) over () as cnt
+            from ower.attendance a
+            left join ower.children_roster cr on cr.id = a.child_id
+            left join ower.kindergarten_groups kg on kg.id = cr.group_id
+            where 1=1
+        `;
 
         // Додаємо фільтри
         if (child_name) {
@@ -466,17 +442,9 @@ class KindergartenRepository {
             values.push(child_id);
         }
 
-        // Додаємо додаткові умови
-        for (const [key, value] of Object.entries(whereConditions)) {
-            if (value !== null && value !== undefined && value !== '') {
-                sql += ` AND a.${key} = ?`;
-                values.push(value);
-            }
-        }
-
-        // Сортування
-        const validSortBy = ['date', 'child_name', 'group_name', 'attendance_status', 'created_at'].includes(sort_by) 
-            ? sort_by : 'date';
+        // Додаємо сортування
+        const allowedSortFields = ['id', 'date', 'attendance_status', 'created_at'];
+        const validSortBy = allowedSortFields.includes(sort_by) ? sort_by : 'date';
         const validSortDirection = ['asc', 'desc'].includes(sort_direction.toLowerCase()) ? sort_direction.toUpperCase() : 'DESC';
         
         // Для сортування по імені дитини або групі використовуємо відповідні поля
@@ -650,7 +618,6 @@ class KindergartenRepository {
                     'date', dfc.date,
                     'young_group_cost', dfc.young_group_cost,
                     'older_group_cost', dfc.older_group_cost,
-                    'notes', dfc.notes,
                     'created_at', dfc.created_at
                 ) as rw,
                 count(*) over () as cnt
@@ -706,22 +673,20 @@ class KindergartenRepository {
             date,
             young_group_cost,
             older_group_cost,
-            notes,
             created_at
         } = data;
 
         const sql = `
             INSERT INTO ower.daily_food_cost 
-            (date, young_group_cost, older_group_cost, notes, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            RETURNING id, date, young_group_cost, older_group_cost, notes, created_at
+            (date, young_group_cost, older_group_cost, created_at)
+            VALUES (?, ?, ?, ?)
+            RETURNING id, date, young_group_cost, older_group_cost, created_at
         `;
 
         const values = [
             date,
             young_group_cost,
             older_group_cost,
-            notes,
             created_at
         ];
 
@@ -730,7 +695,7 @@ class KindergartenRepository {
 
     async getDailyFoodCostById(id) {
         const sql = `
-            SELECT id, date, young_group_cost, older_group_cost, notes, created_at 
+            SELECT id, date, young_group_cost, older_group_cost, created_at 
             FROM ower.daily_food_cost 
             WHERE id = ?
         `;
@@ -745,7 +710,7 @@ class KindergartenRepository {
             UPDATE ower.daily_food_cost 
             SET ${fields}
             WHERE id = ?
-            RETURNING id, date, young_group_cost, older_group_cost, notes, created_at
+            RETURNING id, date, young_group_cost, older_group_cost, created_at
         `;
         
         return await sqlRequest(sql, values);
